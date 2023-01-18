@@ -1,0 +1,358 @@
+---
+title: "Parleh Host Report"
+output:
+  word_document: default
+  pdf_document: default
+  html_notebook: default
+---
+
+#### Data Import
+```{r}
+library(tidyverse)# Load base packages manually
+
+pacman::p_load(pacman, rio) 
+
+# CSV
+crina <- import("/Users/tmane/OneDrive/Desktop/twitterscrap/crinatwitterdata.csv")
+james <- import("/Users/tmane/OneDrive/Desktop/twitterscrap/jamessharmantwitterdata.csv")
+michael <- import("/Users/tmane/OneDrive/Desktop/twitterscrap/michaelsinghtwitterdata.csv")
+noor <- import("/Users/tmane/OneDrive/Desktop/twitterscrap/noortwitterdata.csv")
+
+```
+
+## Crina - @crinamm
+
+##### Crina's Twitter Stats
+Followers: 3,179
+Following: 908
+
+Crina posts a high volume of tweets every month. At the end of April and in the month of May, she posted over 1,400 tweets, and over 1000 in June. 
+
+* In May she garnered 7096 likes, 880 replies, and 418,172 retweets.
+* In June she garnered 4978 likes, 588 replies, and 149,205 retweets.
+* So far, in July she has garnered 543 likes, 60 replies, and 33998 retweets.
+
+A majoirty of her content consists of WNBA, tennis, and Parleh/Fanduel retweets.
+
+```{r}
+noor %>%
+  filter(created_at > "2022-06-30") %>%
+  summarise(
+    likes = sum(likes),
+    replies = sum(replies),
+    retweets = sum(retweets)    
+    )
+```
+```{r}
+#Number of Tweets Each Month
+crina_monthly_tweets <- tribble(
+  ~Month,         ~Tweets,
+  "May",       1418,
+  "June",       1093,
+  "July",        114,
+)
+
+ggplot(data = crina_monthly_tweets, aes(x = Month, y = Tweets, stat = "identity")) +
+  geom_col(color = "black") +
+  geom_text(aes(label = Tweets),
+      position = position_stack(vjust = 0.5)) + 
+  coord_polar(theta = "y") + 
+  ggtitle("Crina - Tweets Posted Per Month")
+
+            
+```
+
+```{r}
+#Tweets Posted Per Day
+
+ggplot(crina, aes(created_at))+
+geom_freqpoly(binwidth = 86400) +
+ggtitle("Crina - Tweets Posted Per Day")
+```
+Crina's high volume of twitter activity is advantageous for the Parleh. Crina has a regular cadence of content that she posts everyday that our audience can count on and look forward to (engaging in Twitter activity 40 times a day on average). 
+
+Crina also retweets a majority of the Parleh's content everyday. In turn, our content is being amplified to an additional 3,180 followers, and increases the chances of more engagement and impressions.
+
+```{r}
+#Likes per Tweet
+data <- crina %>%
+  rownames_to_column(var="likes")
+
+ggplot(data = crina) + 
+  geom_point(mapping = aes(x = created_at, y = likes), position = 'jitter') +
+  ggtitle("Crina - Likes Per Tweet") + 
+  geom_label( 
+    data=crina %>% filter(created_at>'2022-04-15' & likes>200), # Filter data first
+    aes(x = created_at, y = likes,label=likes)
+  )
+
+```
+
+Above, I have highlighted Crina's top performing tweets in terms of likes. 
+* Out of her top 9 most engaging tweets, 7 of them were about the WNBA
+* All of the tweets included an attached video, GIF, or image
+* All of the tweets had over 10 replies; sparked a discussion relevant to her content
+  * This is something we should aim to replicate with Crina under the Parleh brand. (Try and spark a converstaion in our comment section)
+
+### Most Engaging Tweets
+
+```{r}
+#Most Engaging Tweets
+crina_smaller <- transmute(crina, created_at, likes, replies, retweets, engagements = (likes + replies + retweets), text) 
+
+arrange(crina_smaller, desc(likes))
+```
+
+```{r}
+#Likes Per Month
+
+crina_monthly_likes <- tribble(
+  ~Month,        ~Likes,
+  "July",       543,
+  "June",       4978,
+  "May",       7096,
+  
+)
+
+ggplot(data = crina_monthly_likes) +
+  geom_bar(mapping = aes(x = Month, y = Likes), stat = "identity") + 
+  geom_label( 
+    data=crina_monthly_likes %>% filter(Likes>0), # Filter data first
+    aes(x = Month, y = Likes,label=Likes)
+  ) +
+  ggtitle("Crina - Likes Per Month")
+```
+### Engagement Distribution
+
+```{r}
+#Distribution of Likes
+crina_smaller <- select(crina, created_at, likes, replies, retweets) %>%
+  mutate(crina, engagements = (likes + replies + retweets) )
+
+
+crina_smaller %>%
+  filter(engagements < 201) %>%
+  ggplot(aes(x=engagements)) +
+    geom_histogram(binwidth = 20) +
+  ggtitle("Crina - Engagement Distribution")
+      
+```
+Above shows the distribution of Crina's total engagements (likes + replies + retweets). A majoirty of her tweets garner 0-25 total engagements, which is common for her follower count.
+
+
+## James - @jamessharman
+
+##### James' Twitter Stats
+Followers: 16,093
+Following: 1,805
+
+James posts a relatively low volume of tweets each month compared to Crina. At the end of April and in the month of May, he posted 135 tweets, and 134 in June. 
+
+* In May he garnered 1266 likes, 187 replies, and 1325 retweets.
+* In June he garnered 1050 likes, 120 replies, and 366 retweets.
+* So far, in July she has garnered 62 likes, 7 replies, and 27 retweets.
+
+James' Twitter content consists of mainly soccer content; and reposting Parleh and Footy Prime content.
+
+```{r}
+#Number of Tweets Each Month
+james_monthly_tweets <- tribble(
+  ~Month,         ~Tweets,
+  "May",       134,
+  "June",       135,
+  "July",        14,
+)
+
+ggplot(data = james_monthly_tweets, aes(x = Month, y = Tweets, stat = "identity")) +
+  geom_col(color = "black") +
+  geom_text(aes(label = Tweets),
+      position = position_stack(vjust = 0.5)) + 
+  coord_polar(theta = "y") + 
+  ggtitle("James - Tweets Posted Per Month")
+  
+
+```
+```{r}
+#Tweets Posted Per Day
+james_smaller <- filter(james, created_at > "2022-04-30")
+
+ggplot(james_smaller, aes(created_at))+
+geom_freqpoly(binwidth = 84600) +
+ggtitle("James - Tweets Posted Per Day")
+```
+James is currently averaging about 4.5 tweets per day. This is actually above the U.S. average for tweets per day. The top 25% tweeters in the U.S. (in terms of volume) tweet about 2.1 times per day.
+
+```{r}
+#Likes per Tweet
+
+
+ggplot(data = james_smaller) + 
+  geom_point(mapping = aes(x = created_at, y = likes), position = 'jitter') +
+  ggtitle("James - Likes Per Tweet") + 
+  geom_label( 
+    data=crina %>% filter(created_at>'2022-04-30' & likes>200), # Filter data first
+    aes(x = created_at, y = likes,label=likes)
+  )
+
+```
+Above, I have highlighted James' top performing tweets in terms of likes. 
+* Out of her top 9 most engaging tweets, 7 of them were about soccer
+* All of the tweets included an attached video, GIF, or image
+* Almost all of the tweets were amplified/amplifying another account; shared media
+
+### Most Engaging Tweets
+
+```{r}
+#Most Engaging Tweets
+james_engage <- transmute(james, created_at, likes, replies, retweets, engagements = (likes + replies + retweets), text) 
+
+arrange(james_engage, desc(likes))
+```
+
+```{r}
+#Likes Per Month
+
+james_monthly_likes <- tribble(
+  ~Month,        ~Likes,
+  "July",       62,
+  "June",       1050,
+  "May",       1252,
+  
+)
+
+ggplot(data = james_monthly_likes) +
+  geom_bar(mapping = aes(x = Month, y = Likes), stat = "identity") + 
+  geom_label( 
+    data=james_monthly_likes %>% filter(Likes>0), # Filter data first
+    aes(x = Month, y = Likes,label=Likes)
+  ) +
+  ggtitle("James - Likes Per Month")
+```
+### Engagement Distribution
+
+```{r}
+#Distribution of Likes
+james_small <- select(james, created_at, likes, replies, retweets) %>%
+  mutate(james, engagements = (likes + replies + retweets) )
+
+
+james_small %>%
+  filter(engagements < 201) %>%
+  ggplot(aes(x=engagements)) +
+    geom_histogram(binwidth = 20) +
+  ggtitle("James - Engagement Distribution")
+      
+```
+Above shows the distribution of James' total engagements (likes + replies + retweets). A majoirty of his tweets garner 0-25 total engagements, which is common for his follower count.
+
+
+## Noor - @noorrzainab
+
+##### Noor's Twitter Stats
+	
+Followers: 10,244
+Following: 1,154
+
+At the end of April and in the month of May, Noor posted over 308 tweets, and 324 tweets in June. 
+
+* In May she garnered 7627 likes, 446 replies, and 48320 retweets.
+* In June she garnered 6093 likes, 380 replies, and 2669 retweets.
+* So far, in July she has garnered 6,139 likes, 145 replies, and 1612 retweets.
+
+A majority of her content consists of NBA related tweets, and Parleh 3-Point Line/General content retweets.
+
+```{r}
+#Number of Tweets Each Month
+noor_monthly_tweets <- tribble(
+  ~Month,         ~Tweets,
+  "May",       308,
+  "June",       324,
+  "July",        51,
+)
+
+ggplot(data = noor_monthly_tweets, aes(x = Month, y = Tweets, stat = "identity")) +
+  geom_col(color = "black") +
+  geom_text(aes(label = Tweets),
+      position = position_stack(vjust = 0.5)) + 
+  coord_polar(theta = "y") + 
+  ggtitle("Noor - Tweets Posted Per Month")
+            
+```
+```{r}
+#Tweets Posted Per Day
+noor_smaller <- filter(noor, created_at > "2022-04-30")
+
+ggplot(noor_smaller, aes(created_at))+
+geom_freqpoly(binwidth = 84600) +
+ggtitle("Noor - Tweets Posted Per Day")
+```
+James is currently averaging about 10 tweets per day. Noor Posts a high volume of tweets, and is consistant at amplifying Parleh content everday. Thus, we need to figure out how we can drive Noor's twitter engagement to the Parleh's profile.
+
+
+
+```{r}
+#Likes per Tweet
+
+ggplot(data = noor_smaller) + 
+  geom_point(mapping = aes(x = created_at, y = likes), position = 'jitter') +
+  ggtitle("Noor - Likes Per Tweet") + 
+  geom_label( 
+    data=noor %>% filter(created_at>'2022-04-30' & likes>200), # Filter data first
+    aes(x = created_at, y = likes,label=likes)
+  )
+
+```
+Above, I have highlighted Noor's top performing tweets in terms of likes.
+* Noor is the only content creator at the Parleh that can hit a likes account > 1000 consistently
+* Many of her top tweets did not have a video or image attached to it
+  * Example - Noors Top Tweet "If there’s anyone you wanna be down 0-2 to it’s doc rivers"
+    * 19.5k likes
+    * 222 Quote Tweets
+    * 1,090 Retweets
+  * Even though she didnt attach video content, she was able to spark a conversation and engagement in replies to her tweet.
+
+
+### Most Engaging Tweets
+
+```{r}
+#Most Engaging Tweets
+noor_engage <- transmute(noor, created_at, likes, replies, retweets, engagements = (likes + replies + retweets), text) 
+
+arrange(noor_engage, desc(likes)) 
+```
+```{r}
+#Likes Per Month
+
+noor_monthly_likes <- tribble(
+  ~Month,        ~Likes,
+  "July",       6145,
+  "June",       6093,
+  "May",       7627,
+  
+)
+
+ggplot(data = noor_monthly_likes) +
+  geom_bar(mapping = aes(x = Month, y = Likes), stat = "identity") + 
+  geom_label( 
+    data=noor_monthly_likes %>% filter(Likes>0), # Filter data first
+    aes(x = Month, y = Likes,label=Likes)
+  ) +
+  ggtitle("Noor - Likes Per Month")
+```
+
+### Engagement Distribution
+
+```{r}
+#Distribution of Likes
+noor_small <- select(noor, created_at, likes, replies, retweets) %>%
+  mutate(noor, engagements = (likes + replies + retweets) )
+
+
+noor_small %>%
+  filter(engagements < 201) %>%
+  ggplot(aes(x=engagements)) +
+    geom_histogram(binwidth = 50) +
+  ggtitle("Noor - Engagement Distribution")
+      
+```
+Above shows the distribution of Noors' total engagements (likes + replies + retweets). A majoirty of her tweets garner 0-50 total engagements. She also has about 300 Tweets that attained over 500 engagements.
